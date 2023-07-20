@@ -61,6 +61,11 @@ function Route(props: RouteProps | RedirectRouteProps | NotFoundRouteProps) {
   return <InternalRoute {...props} />
 }
 
+const LimitRerendering = (props: { reactTo: string; children: any }) => {
+  // eslint-disable-next-line
+  return React.useMemo(() => props.children, [props.reactTo])
+}
+
 const InternalRoute = ({
   path,
   page,
@@ -118,8 +123,17 @@ const InternalRoute = ({
   delete allParams['ref']
   delete allParams['key']
 
+  const rerenderTrigger = JSON.stringify({
+    allParams,
+    loadingState: activePageContext.loadingState[path],
+  })
+
   // Level 3/3 (InternalRoute)
-  return <Page {...allParams} />
+  return (
+    <LimitRerendering reactTo={rerenderTrigger}>
+      <Page {...allParams} />
+    </LimitRerendering>
+  )
 }
 
 function isRoute(
